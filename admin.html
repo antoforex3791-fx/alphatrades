@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Alpha Trader - Complete Control</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .admin-container { max-width: 1400px; margin: 0 auto; }
+    .admin-header {
+      background: white;
+      border-radius: 20px;
+      padding: 25px 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-header h1 { color: #333; display: flex; align-items: center; gap: 12px; }
+    .view-site-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-box {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .stat-number { font-size: 1.8rem; font-weight: bold; color: #764ba2; }
+    .quick-actions {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .action-btn {
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .action-btn.danger { background: #fee; border-color: #dc3545; color: #dc3545; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: #f0f0f0;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+      font-size: 0.85rem;
+    }
+    .tab-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .admin-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 15px 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-body { padding: 20px; max-height: 550px; overflow-y: auto; }
+    .search-bar {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .result-card, .psychology-card, .weekly-card, .project-card, .trade-card, .book-card, .message-card, .review-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 4px solid #764ba2;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 8px;
+    }
+    .reply-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 8px;
+    }
+    .edit-reply-btn {
+      background: #ffc107;
+      color: #333;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      margin-right: 8px;
+    }
+    .admin-reply {
+      background: #e3f2fd;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      border-left: 3px solid #28a745;
+    }
+    .reply-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    button { cursor: pointer; }
+    @media (max-width: 768px) { body { padding: 10px; } .tab-btn { padding: 8px 12px; font-size: 0.75rem; } }
+  </style>
+</head>
+<body>
+<div class="admin-container">
+  <div class="admin-header">
+    <h1><i class="fas fa-crown"></i> Alpha Trader Admin Portal</h1>
+    <a href="index.html" class="view-site-btn" target="_blank"><i class="fas fa-eye"></i> View Live Site</a>
+  </div>
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat-box"><div class="stat-number" id="statUsers">0</div><div>Users</div></div>
+    <div class="stat-box"><div class="stat-number" id="statPremium">0</div><div>Premium</div></div>
+    <div class="stat-box"><div class="stat-number" id="statResults">0</div><div>Results</div></div>
+    <div class="stat-box"><div class="stat-number" id="statProjects">0</div><div>Projects</div></div>
+    <div class="stat-box"><div class="stat-number" id="statTrades">0</div><div>Trades</div></div>
+    <div class="stat-box"><div class="stat-number" id="statBooks">0</div><div>Books</div></div>
+    <div class="stat-box"><div class="stat-number" id="statMessages">0</div><div>Messages</div></div>
+  </div>
+
+  <div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+    <div class="action-buttons">
+      <button class="action-btn" onclick="exportData()"><i class="fas fa-download"></i> Export Data</button>
+      <button class="action-btn" onclick="clearAllContent()"><i class="fas fa-trash"></i> Clear All Content</button>
+      <button class="action-btn danger" onclick="resetSystem()"><i class="fas fa-radiation"></i> RESET SYSTEM</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('premium')"><i class="fas fa-crown"></i> Premium</button>
+    <button class="tab-btn" onclick="switchTab('livefeed')"><i class="fas fa-chart-line"></i> Live Feed</button>
+    <button class="tab-btn" onclick="switchTab('psychology')"><i class="fas fa-brain"></i> Psychology</button>
+    <button class="tab-btn" onclick="switchTab('weekly')"><i class="fas fa-calendar-week"></i> Weekly</button>
+    <button class="tab-btn" onclick="switchTab('projects')"><i class="fas fa-code-branch"></i> Projects</button>
+    <button class="tab-btn" onclick="switchTab('trades')"><i class="fas fa-chart-simple"></i> Trades</button>
+    <button class="tab-btn" onclick="switchTab('books')"><i class="fas fa-book"></i> Books</button>
+    <button class="tab-btn" onclick="switchTab('messages')"><i class="fas fa-envelope"></i> Messages</button>
+    <button class="tab-btn" onclick="switchTab('analysis')"><i class="fas fa-chart-simple"></i> Analysis</button>
+    <button class="tab-btn" onclick="switchTab('reviews')"><i class="fas fa-star"></i> Reviews</button>
+    <button class="tab-btn" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</button>
+  </div>
+
+  <!-- PREMIUM MANAGEMENT TAB -->
+  <div id="premiumTab" class="tab-content active">
+    <div class="admin-card">
+      <div class="card-header"><i class="fas fa-crown"></i> Premium Settings</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Monthly Subscription Price</label>
+          <input type="text" id="premiumPrice" placeholder="e.g., 29.99">
+        </div>
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="premiumCurrency">
+            <option value="$">USD ($)</option>
+            <option value="KSh">KES (KSh)</option>
+            <option value="€">EUR (€)</option>
+            <option value="£">GBP (£)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Payment Instructions</label>
+          <textarea id="paymentInstructions" rows="3" placeholder="M-Pesa: 07XX XXX XXX&#10;PayPal: paypal@email.com"></textarea>
+        </div>
+        <button onclick="savePremiumSettings()" style="background:#28a745; padding:10px; border:none; border-radius:8px; color:white;">Save Settings</button>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="card-header"><i class="fas fa-chart-line"></i> Manage Analyzed Pairs</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Add New Analyzed Pair</label>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="newPair" placeholder="e.g., EUR/USD" style="flex:1;">
+            <input type="text" id="newPairAnalysis" placeholder="Analysis notes" style="flex:2;">
+            <button onclick="addAnalyzedPair()" style="background:#28a745; padding:8px 16px;">Add</button>
+          </div>
+        </div>
+        <div id="analyzedPairsList" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <div class="card-header"><i class="fas fa-users"></i> Premium Users</div>
+      <div class="card-body">
+        <input type="text" class="search-bar" id="searchPremiumUsers" placeholder="Search premium users...">
+        <div id="premiumUsersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE TRADING FEED TAB -->
+  <div id="livefeedTab" class="tab-content">
+    <div class="admin-card">
+      <div class="card-header"><i class="fas fa-plus-circle"></i> Add Trading Result</div>
+      <div class="card-body">
+        <div class="form-group"><label>Pair</label><input type="text" id="resultPair" placeholder="EUR/USD"></div>
+        <div class="form-group"><label>Pips</label><input type="text" id="resultPips" placeholder="+86"></div>
+        <div class="form-group"><label>Profit</label><input type="text" id="resultProfit" placeholder="$430"></div>
+        <div class="form-group"><label>Result</label><select id="resultType"><option value="WIN">WIN</option><option value="LOSS">LOSS</option></select></div>
+        <div class="form-group"><label>Entry</label><input type="text" id="resultEntry" placeholder="1.0952"></div>
+        <div class="form-group"><label>Exit</label><input type="text" id="resultExit" placeholder="1.1038"></div>
+        <div class="form-group"><label>Analysis</label><textarea id="resultDesc" rows="2"></textarea></div>
+        <button onclick="addTradingResult()" style="background:#28a745; padding:10px;">Publish</button>
+      </div>
+    </div>
+    <div class="admin-card"><div class="card-header">Manage Results</div><div class="card-body"><div id="resultsList"></div></div></div>
+  </div>
+
+  <!-- PSYCHOLOGY TAB -->
+  <div id="psychologyTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Add Psychology Session</div><div class="card-body">
+      <input type="text" id="psychTitle" placeholder="Title"><br><br>
+      <select id="psychType"><option value="video">Video</option><option value="article">Article</option></select><br><br>
+      <select id="psychCategory"><option value="Mindset">Mindset</option><option value="Discipline">Discipline</option><option value="Emotions">Emotions</option></select><br><br>
+      <input type="text" id="psychVideoUrl" placeholder="YouTube URL"><br><br>
+      <textarea id="psychContent" rows="3" placeholder="Content"></textarea><br><br>
+      <input type="text" id="psychDuration" placeholder="Duration"><br><br>
+      <button onclick="addPsychologySession()" style="background:#28a745;">Add</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Psychology</div><div class="card-body"><div id="psychologyList"></div></div></div>
+  </div>
+
+  <!-- WEEKLY TAB -->
+  <div id="weeklyTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Create Weekly Outlook</div><div class="card-body">
+      <input type="text" id="weeklyWeek" placeholder="Week Number"><br><br>
+      <input type="text" id="weeklyDateRange" placeholder="Date Range"><br><br>
+      <input type="text" id="weeklyVideoUrl" placeholder="YouTube URL"><br><br>
+      <textarea id="weeklySummary" rows="2" placeholder="Summary"></textarea><br><br>
+      <button onclick="addWeeklyOutlook()" style="background:#28a745;">Publish</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Weekly</div><div class="card-body"><div id="weeklyList"></div></div></div>
+  </div>
+
+  <!-- PROJECTS TAB -->
+  <div id="projectsTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Add Project</div><div class="card-body">
+      <input type="text" id="projectName" placeholder="Project Name"><br><br>
+      <textarea id="projectDesc" rows="2" placeholder="Description"></textarea><br><br>
+      <button onclick="addProject()" style="background:#28a745;">Add</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Projects</div><div class="card-body"><div id="projectsList"></div><button onclick="clearAllProjects()" style="background:#dc3545; margin-top:10px;">Delete All</button></div></div>
+  </div>
+
+  <!-- TRADES TAB -->
+  <div id="tradesTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Add Trade</div><div class="card-body">
+      <input type="text" id="tradePair" placeholder="Pair"><br><br>
+      <input type="text" id="tradePips" placeholder="Pips"><br><br>
+      <select id="tradeResultType"><option value="WIN">WIN</option><option value="LOSS">LOSS</option></select><br><br>
+      <button onclick="addTrade()" style="background:#28a745;">Add</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Trades</div><div class="card-body"><div id="tradesList"></div><button onclick="clearAllTrades()" style="background:#dc3545; margin-top:10px;">Delete All</button></div></div>
+  </div>
+
+  <!-- BOOKS TAB -->
+  <div id="booksTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Upload Book</div><div class="card-body">
+      <input type="text" id="bookTitle" placeholder="Title"><br><br>
+      <input type="text" id="bookAuthor" placeholder="Author"><br><br>
+      <button onclick="uploadBook()" style="background:#28a745;">Upload</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Books</div><div class="card-body"><div id="booksList"></div><button onclick="clearAllBooks()" style="background:#dc3545; margin-top:10px;">Delete All</button></div></div>
+  </div>
+
+  <!-- MESSAGES TAB - WITH EDIT REPLY FEATURE -->
+  <div id="messagesTab" class="tab-content">
+    <div class="admin-card">
+      <div class="card-header"><i class="fas fa-envelope"></i> User Messages (Private)</div>
+      <div class="card-body">
+        <input type="text" class="search-bar" id="searchMessages" placeholder="Search messages...">
+        <div id="messagesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYSIS TAB -->
+  <div id="analysisTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Add Analysis</div><div class="card-body">
+      <input type="text" id="analysisTitle" placeholder="Title"><br><br>
+      <textarea id="analysisContent" rows="3" placeholder="Content"></textarea><br><br>
+      <button onclick="addAnalysis()" style="background:#28a745;">Add</button>
+    </div></div>
+    <div class="admin-card"><div class="card-header">Manage Analysis</div><div class="card-body"><div id="analysisList"></div></div></div>
+  </div>
+
+  <!-- REVIEWS TAB -->
+  <div id="reviewsTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">User Reviews</div><div class="card-body"><div id="reviewsList"></div><button onclick="clearAllReviews()" style="background:#dc3545; margin-top:10px;">Delete All</button></div></div>
+  </div>
+
+  <!-- USERS TAB -->
+  <div id="usersTab" class="tab-content">
+    <div class="admin-card"><div class="card-header">Registered Users</div><div class="card-body"><div id="usersList"></div></div></div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = "AlphaTrader2025";
+  let isAdmin = false;
+  
+  let siteData = {
+    users: [],
+    messages: [],
+    analysis: [],
+    reviews: [],
+    projects: [{ id: 1, name: "Forex AI Dashboard", desc: "Real-time sentiment analysis", date: Date.now() }],
+    trades: [{ id: 1, pair: "XAUUSD", pips: "+300", result: "WIN", date: Date.now() }],
+    books: [],
+    tradingResults: [],
+    psychologySessions: [],
+    weeklyOutlook: [],
+    premiumSettings: { price: "29.99", currency: "$", instructions: "Send payment to M-Pesa: 07XX XXX XXX" },
+    analyzedPairs: [{ id: 1, pair: "EUR/USD", analysis: "Bullish breakout expected", date: Date.now() }],
+    premiumUsers: []
+  };
+
+  function checkAdminAccess() {
+    const pwd = prompt("Enter Admin Password:");
+    if (pwd === ADMIN_PASSWORD) { isAdmin = true; loadData(); }
+    else { alert("Access Denied!"); document.body.innerHTML = "<h1 style='text-align:center; margin-top:50px;'>Access Denied</h1>"; }
+  }
+
+  function loadData() {
+    const stored = localStorage.getItem('alpha_trader_data');
+    if (stored) { const parsed = JSON.parse(stored); siteData = { ...siteData, ...parsed }; }
+    updateStats();
+    renderAll();
+  }
+
+  function saveData() { localStorage.setItem('alpha_trader_data', JSON.stringify(siteData)); updateStats(); renderAll(); }
+
+  function updateStats() {
+    document.getElementById('statUsers').textContent = siteData.users?.length || 0;
+    document.getElementById('statPremium').textContent = siteData.premiumUsers?.length || 0;
+    document.getElementById('statResults').textContent = siteData.tradingResults?.length || 0;
+    document.getElementById('statProjects').textContent = siteData.projects?.length || 0;
+    document.getElementById('statTrades').textContent = siteData.trades?.length || 0;
+    document.getElementById('statBooks').textContent = siteData.books?.length || 0;
+    document.getElementById('statMessages').textContent = siteData.messages?.length || 0;
+  }
+
+  // ============ PREMIUM FUNCTIONS ============
+  function savePremiumSettings() {
+    const price = document.getElementById('premiumPrice').value;
+    const currency = document.getElementById('premiumCurrency').value;
+    const instructions = document.getElementById('paymentInstructions').value;
+    siteData.premiumSettings = { price, currency, instructions };
+    saveData();
+    alert("✅ Premium settings saved!");
+  }
+
+  function addAnalyzedPair() {
+    const pair = document.getElementById('newPair').value.trim();
+    const analysis = document.getElementById('newPairAnalysis').value.trim();
+    if (!pair) { alert("Enter pair"); return; }
+    if (!siteData.analyzedPairs) siteData.analyzedPairs = [];
+    siteData.analyzedPairs.push({ id: Date.now(), pair, analysis: analysis || "Analysis coming soon", date: Date.now() });
+    saveData();
+    renderAnalyzedPairs();
+    document.getElementById('newPair').value = '';
+    document.getElementById('newPairAnalysis').value = '';
+    alert(`✅ ${pair} added!`);
+  }
+
+  function deleteAnalyzedPair(id) {
+    if (confirm("Remove this pair?")) {
+      siteData.analyzedPairs = siteData.analyzedPairs.filter(p => p.id !== id);
+      saveData();
+      renderAnalyzedPairs();
+    }
+  }
+
+  function renderAnalyzedPairs() {
+    const container = document.getElementById('analyzedPairsList');
+    if (!container) return;
+    const pairs = siteData.analyzedPairs || [];
+    if (pairs.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px;">No analyzed pairs yet</div>'; return; }
+    container.innerHTML = pairs.map(p => `
+      <div style="background:#f8f9fa; padding:12px; margin-bottom:10px; border-radius:8px;">
+        <div><strong>${escapeHtml(p.pair)}</strong></div>
+        <div style="font-size:0.85rem;">${escapeHtml(p.analysis)}</div>
+        <button onclick="deleteAnalyzedPair(${p.id})" style="background:#dc3545; color:white; border:none; padding:4px 12px; margin-top:8px;">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  function grantPremiumAccess(userId) {
+    const user = siteData.users.find(u => u.id === userId);
+    if (!user) return;
+    const durationDays = prompt("Enter subscription duration in days (30, 90, 180, 365):", "30");
+    if (!durationDays) return;
+    const expiryDate = Date.now() + parseInt(durationDays) * 24 * 60 * 60 * 1000;
+    if (!siteData.premiumUsers) siteData.premiumUsers = [];
+    siteData.premiumUsers = siteData.premiumUsers.filter(pu => pu.userId !== userId);
+    siteData.premiumUsers.push({ userId, username: user.username, email: user.email, subscriptionDate: Date.now(), expiryDate, status: "active", durationDays: parseInt(durationDays) });
+    user.isPremium = true;
+    saveData();
+    renderPremiumUsers();
+    alert(`✅ Premium granted to ${user.username} for ${durationDays} days!`);
+  }
+
+  function revokePremiumAccess(userId) {
+    if (confirm("Revoke premium access?")) {
+      siteData.premiumUsers = siteData.premiumUsers.filter(pu => pu.userId !== userId);
+      const user = siteData.users.find(u => u.id === userId);
+      if (user) user.isPremium = false;
+      saveData();
+      renderPremiumUsers();
+      alert("✅ Premium revoked!");
+    }
+  }
+
+  function renderPremiumUsers(search = '') {
+    const container = document.getElementById('premiumUsersList');
+    if (!container) return;
+    const premiumUsers = siteData.premiumUsers || [];
+    const filtered = premiumUsers.filter(pu => pu.username.toLowerCase().includes(search.toLowerCase()) || pu.email.toLowerCase().includes(search.toLowerCase()));
+    if (filtered.length === 0) { container.innerHTML = '<div style="text-align:center; padding:40px;">No premium users</div>'; return; }
+    container.innerHTML = filtered.map(pu => {
+      const expiryDate = new Date(pu.expiryDate);
+      const isExpired = expiryDate < Date.now();
+      const daysLeft = Math.ceil((pu.expiryDate - Date.now()) / (1000 * 60 * 60 * 24));
+      return `
+        <div style="background:#f8f9fa; padding:15px; margin-bottom:12px; border-radius:10px; border-left: 4px solid ${isExpired ? '#dc3545' : '#28a745'};">
+          <div><strong>${escapeHtml(pu.username)}</strong> (${escapeHtml(pu.email)})</div>
+          <div>Expires: ${expiryDate.toLocaleDateString()} <span style="color: ${isExpired ? '#dc3545' : '#28a745'};">(${isExpired ? 'Expired' : daysLeft + ' days left'})</span></div>
+          <button onclick="revokePremiumAccess(${pu.userId})" style="background:#dc3545; color:white; border:none; padding:5px 12px; margin-top:8px;">Revoke</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ============ TRADING RESULTS ============
+  function addTradingResult() {
+    const pair = document.getElementById('resultPair').value.trim();
+    const pips = document.getElementById('resultPips').value.trim();
+    const profit = document.getElementById('resultProfit').value.trim();
+    const result = document.getElementById('resultType').value;
+    const entry = document.getElementById('resultEntry').value.trim();
+    const exit = document.getElementById('resultExit').value.trim();
+    const desc = document.getElementById('resultDesc').value.trim();
+    if (!pair) return alert("Enter pair");
+    siteData.tradingResults.unshift({ id: Date.now(), pair, pips, profit, result, entry, exit, desc, date: Date.now() });
+    saveData();
+    document.getElementById('resultPair').value = ''; document.getElementById('resultPips').value = ''; document.getElementById('resultProfit').value = '';
+    document.getElementById('resultEntry').value = ''; document.getElementById('resultExit').value = ''; document.getElementById('resultDesc').value = '';
+    alert("✅ Result added!");
+  }
+  function deleteResult(id) { siteData.tradingResults = siteData.tradingResults.filter(r => r.id !== id); saveData(); }
+  function renderResults() { const container = document.getElementById('resultsList'); if(!container) return; if(!siteData.tradingResults?.length) { container.innerHTML = '<div>No results</div>'; return; } container.innerHTML = siteData.tradingResults.map(r => `<div class="result-card"><div><strong>${escapeHtml(r.pair)}</strong> - ${r.pips} pips</div><button class="delete-btn" onclick="deleteResult(${r.id})">Delete</button></div>`).join(''); }
+
+  // ============ PSYCHOLOGY ============
+  function addPsychologySession() {
+    const title = document.getElementById('psychTitle').value.trim();
+    if (!title) return alert("Enter title");
+    siteData.psychologySessions.unshift({ id: Date.now(), title, type: document.getElementById('psychType').value, category: document.getElementById('psychCategory').value, videoUrl: document.getElementById('psychVideoUrl').value, content: document.getElementById('psychContent').value, duration: document.getElementById('psychDuration').value, date: Date.now() });
+    saveData();
+    document.getElementById('psychTitle').value = ''; document.getElementById('psychVideoUrl').value = ''; document.getElementById('psychContent').value = ''; document.getElementById('psychDuration').value = '';
+    alert("✅ Session added!");
+  }
+  function deletePsychology(id) { siteData.psychologySessions = siteData.psychologySessions.filter(s => s.id !== id); saveData(); }
+  function renderPsychology() { const container = document.getElementById('psychologyList'); if(!container) return; if(!siteData.psychologySessions?.length) { container.innerHTML = '<div>No sessions</div>'; return; } container.innerHTML = siteData.psychologySessions.map(s => `<div class="psychology-card"><div><strong>${escapeHtml(s.title)}</strong></div><button class="delete-btn" onclick="deletePsychology(${s.id})">Delete</button></div>`).join(''); }
+
+  // ============ WEEKLY ============
+  function addWeeklyOutlook() {
+    const week = document.getElementById('weeklyWeek').value.trim();
+    if (!week) return alert("Enter week");
+    siteData.weeklyOutlook.unshift({ id: Date.now(), weekNumber: week, dateRange: document.getElementById('weeklyDateRange').value, videoUrl: document.getElementById('weeklyVideoUrl').value, summary: document.getElementById('weeklySummary').value, date: Date.now() });
+    saveData();
+    document.getElementById('weeklyWeek').value = ''; document.getElementById('weeklyDateRange').value = ''; document.getElementById('weeklyVideoUrl').value = ''; document.getElementById('weeklySummary').value = '';
+    alert("✅ Weekly added!");
+  }
+  function deleteWeekly(id) { siteData.weeklyOutlook = siteData.weeklyOutlook.filter(w => w.id !== id); saveData(); }
+  function renderWeekly() { const container = document.getElementById('weeklyList'); if(!container) return; if(!siteData.weeklyOutlook?.length) { container.innerHTML = '<div>No weekly</div>'; return; } container.innerHTML = siteData.weeklyOutlook.map(w => `<div class="weekly-card"><div><strong>Week ${w.weekNumber}</strong></div><button class="delete-btn" onclick="deleteWeekly(${w.id})">Delete</button></div>`).join(''); }
+
+  // ============ PROJECTS ============
+  function addProject() { const name = document.getElementById('projectName').value.trim(); if(!name) return; siteData.projects.push({ id: Date.now(), name, desc: document.getElementById('projectDesc').value, date: Date.now() }); saveData(); document.getElementById('projectName').value = ''; document.getElementById('projectDesc').value = ''; alert("✅ Project added!"); }
+  function deleteProject(id) { siteData.projects = siteData.projects.filter(p => p.id !== id); saveData(); }
+  function clearAllProjects() { if(confirm("Delete all projects?")) { siteData.projects = []; saveData(); } }
+  function renderProjects() { const container = document.getElementById('projectsList'); if(!container) return; if(!siteData.projects?.length) { container.innerHTML = '<div>No projects</div>'; return; } container.innerHTML = siteData.projects.map(p => `<div class="project-card"><div><strong>${escapeHtml(p.name)}</strong></div><button class="delete-btn" onclick="deleteProject(${p.id})">Delete</button></div>`).join(''); }
+
+  // ============ TRADES ============
+  function addTrade() { const pair = document.getElementById('tradePair').value.trim(); if(!pair) return; siteData.trades.unshift({ id: Date.now(), pair, pips: document.getElementById('tradePips').value, result: document.getElementById('tradeResultType').value, date: Date.now() }); saveData(); document.getElementById('tradePair').value = ''; document.getElementById('tradePips').value = ''; alert("✅ Trade added!"); }
+  function deleteTrade(id) { siteData.trades = siteData.trades.filter(t => t.id !== id); saveData(); }
+  function clearAllTrades() { if(confirm("Delete all trades?")) { siteData.trades = []; saveData(); } }
+  function renderTrades() { const container = document.getElementById('tradesList'); if(!container) return; if(!siteData.trades?.length) { container.innerHTML = '<div>No trades</div>'; return; } container.innerHTML = siteData.trades.map(t => `<div class="trade-card"><div><strong>${escapeHtml(t.pair)}</strong> - ${t.pips} pips</div><button class="delete-btn" onclick="deleteTrade(${t.id})">Delete</button></div>`).join(''); }
+
+  // ============ BOOKS ============
+  function uploadBook() { const title = document.getElementById('bookTitle').value.trim(); if(!title) return; siteData.books.push({ id: Date.now(), title, author: document.getElementById('bookAuthor').value, uploadDate: Date.now() }); saveData(); document.getElementById('bookTitle').value = ''; document.getElementById('bookAuthor').value = ''; alert("✅ Book added!"); }
+  function deleteBook(id) { siteData.books = siteData.books.filter(b => b.id !== id); saveData(); }
+  function clearAllBooks() { if(confirm("Delete all books?")) { siteData.books = []; saveData(); } }
+  function renderBooks() { const container = document.getElementById('booksList'); if(!container) return; if(!siteData.books?.length) { container.innerHTML = '<div>No books</div>'; return; } container.innerHTML = siteData.books.map(b => `<div class="book-card"><div><strong>${escapeHtml(b.title)}</strong> by ${escapeHtml(b.author)}</div><button class="delete-btn" onclick="deleteBook(${b.id})">Delete</button></div>`).join(''); }
+
+  // ============ MESSAGES - WITH EDIT REPLY FUNCTIONALITY ============
+  function replyToMessage(messageId) {
+    const replyText = prompt("Type your reply to this user:");
+    if (!replyText) return;
+    const message = siteData.messages.find(m => m.id === messageId);
+    if (message) {
+      if (!message.replies) message.replies = [];
+      message.replies.push({ 
+        adminReply: true, 
+        text: replyText, 
+        timestamp: Date.now(),
+        id: Date.now()
+      });
+      message.read = true;
+      saveData();
+      renderMessages();
+      alert("Reply sent!");
+    }
+  }
+  
+  function editReply(messageId, replyId) {
+    const message = siteData.messages.find(m => m.id === messageId);
+    if (message && message.replies) {
+      const reply = message.replies.find(r => r.id === replyId);
+      if (reply) {
+        const newText = prompt("Edit your reply:", reply.text);
+        if (newText && newText.trim()) {
+          reply.text = newText.trim();
+          reply.edited = true;
+          reply.editedAt = Date.now();
+          saveData();
+          renderMessages();
+          alert("✅ Reply updated!");
+        }
+      }
+    }
+  }
+  
+  function deleteReply(messageId, replyId) {
+    if (confirm("Delete this reply?")) {
+      const message = siteData.messages.find(m => m.id === messageId);
+      if (message && message.replies) {
+        message.replies = message.replies.filter(r => r.id !== replyId);
+        saveData();
+        renderMessages();
+        alert("✅ Reply deleted!");
+      }
+    }
+  }
+  
+  function deleteMessage(messageId) {
+    if (confirm("Delete this entire message thread?")) {
+      siteData.messages = siteData.messages.filter(m => m.id !== messageId);
+      saveData();
+    }
+  }
+  
+  function renderMessages(search = '') {
+    const filtered = siteData.messages.filter(m => 
+      m.user.toLowerCase().includes(search.toLowerCase()) || 
+      m.text.toLowerCase().includes(search.toLowerCase())
+    );
+    const container = document.getElementById('messagesList');
+    if (!container) return;
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="text-align:center; padding:40px;">No messages from users</div>';
+      return;
+    }
+    
+    container.innerHTML = filtered.map(m => `
+      <div class="message-card">
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
+          <div>
+            <strong><i class="fas fa-user-circle"></i> ${escapeHtml(m.user)}</strong>
+            ${!m.read ? '<span style="background:#dc3545; color:white; padding:2px 8px; border-radius:12px; font-size:0.7rem; margin-left:8px;">NEW</span>' : ''}
+          </div>
+          <div style="font-size:0.75rem; color:#666;">${new Date(m.timestamp).toLocaleString()}</div>
+        </div>
+        <div style="margin-top: 8px; padding: 8px; background: #e9ecef; border-radius: 8px;">
+          ${escapeHtml(m.text)}
+        </div>
+        
+        ${m.replies && m.replies.length > 0 ? m.replies.map(r => `
+          <div class="admin-reply">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+              <div>
+                <strong><i class="fas fa-reply"></i> Your Reply:</strong>
+                ${r.edited ? '<span style="font-size:0.7rem; color:#666;">(edited)</span>' : ''}
+              </div>
+              <div style="font-size:0.7rem;">${new Date(r.timestamp).toLocaleString()}</div>
+            </div>
+            <div style="margin-top: 5px;">${escapeHtml(r.text)}</div>
+            <div class="reply-actions">
+              <button class="edit-reply-btn" onclick="editReply(${m.id}, ${r.id})"><i class="fas fa-edit"></i> Edit</button>
+              <button class="delete-btn" onclick="deleteReply(${m.id}, ${r.id})" style="background:#dc3545; padding:4px 10px;"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        `).join('') : ''}
+        
+        <div style="margin-top: 12px;">
+          <button class="reply-btn" onclick="replyToMessage(${m.id})"><i class="fas fa-reply"></i> Reply to ${escapeHtml(m.user)}</button>
+          <button class="delete-btn" onclick="deleteMessage(${m.id})"><i class="fas fa-trash"></i> Delete Thread</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ============ ANALYSIS ============
+  function addAnalysis() { const title = document.getElementById('analysisTitle').value.trim(); if(!title) return; siteData.analysis.unshift({ id: Date.now(), title, content: document.getElementById('analysisContent').value, date: Date.now() }); saveData(); document.getElementById('analysisTitle').value = ''; document.getElementById('analysisContent').value = ''; alert("✅ Analysis added!"); }
+  function deleteAnalysis(id) { siteData.analysis = siteData.analysis.filter(a => a.id !== id); saveData(); }
+  function renderAnalysis() { const container = document.getElementById('analysisList'); if(!container) return; if(!siteData.analysis?.length) { container.innerHTML = '<div>No analysis</div>'; return; } container.innerHTML = siteData.analysis.map(a => `<div class="result-card"><div><strong>${escapeHtml(a.title)}</strong></div><button class="delete-btn" onclick="deleteAnalysis(${a.id})">Delete</button></div>`).join(''); }
+
+  // ============ REVIEWS ============
+  function deleteReview(id) { siteData.reviews = siteData.reviews.filter(r => r.id !== id); saveData(); }
+  function clearAllReviews() { if(confirm("Delete all reviews?")) { siteData.reviews = []; saveData(); } }
+  function renderReviews() { const container = document.getElementById('reviewsList'); if(!container) return; if(!siteData.reviews?.length) { container.innerHTML = '<div>No reviews</div>'; return; } container.innerHTML = siteData.reviews.map(r => `<div class="review-card"><div><strong>${escapeHtml(r.user)}</strong> - ${r.rating}★</div><button class="delete-btn" onclick="deleteReview(${r.id})">Delete</button></div>`).join(''); }
+
+  // ============ USERS ============
+  function renderUsers() { const container = document.getElementById('usersList'); if(!container) return; if(!siteData.users?.length) { container.innerHTML = '<div>No users</div>'; return; } container.innerHTML = siteData.users.map(u => `<div class="result-card"><div><strong>${escapeHtml(u.username)}</strong> - ${escapeHtml(u.email)}</div><button onclick="grantPremiumAccess(${u.id})" style="background:#28a745; margin-top:8px;">Grant Premium</button></div>`).join(''); }
+
+  // ============ GENERAL ============
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    const tabIds = ['premium', 'livefeed', 'psychology', 'weekly', 'projects', 'trades', 'books', 'messages', 'analysis', 'reviews', 'users'];
+    const index = tabIds.indexOf(tab);
+    document.querySelectorAll('.tab-btn')[index].classList.add('active');
+    document.getElementById(`${tab}Tab`).classList.add('active');
+  }
+
+  function renderAll() {
+    renderAnalyzedPairs(); renderPremiumUsers(); renderResults(); renderPsychology(); renderWeekly();
+    renderProjects(); renderTrades(); renderBooks(); renderMessages(); renderAnalysis(); renderReviews(); renderUsers();
+  }
+
+  function exportData() { const dataStr = JSON.stringify(siteData, null, 2); const blob = new Blob([dataStr], {type: 'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url); alert("Data exported!"); }
+  function clearAllContent() {
+    if (confirm('Clear ALL content? Users and premium data will remain!')) {
+      siteData.analysis = []; siteData.projects = []; siteData.trades = []; siteData.books = [];
+      siteData.messages = []; siteData.reviews = []; siteData.tradingResults = [];
+      siteData.psychologySessions = []; siteData.weeklyOutlook = [];
+      saveData();
+      alert("All content cleared!");
+    }
+  }
+  function resetSystem() { if(confirm('⚠️ COMPLETE RESET?')) { localStorage.clear(); location.reload(); } }
+  function escapeHtml(str) { if(!str) return ''; return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+
+  document.getElementById('searchPremiumUsers')?.addEventListener('input', (e) => renderPremiumUsers(e.target.value));
+  document.getElementById('searchMessages')?.addEventListener('input', (e) => renderMessages(e.target.value));
+  
+  checkAdminAccess();
+</script>
+</body>
+</html>

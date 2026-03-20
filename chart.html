@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Alpha Trader | Premium TradingView Chart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      background: #0a0f1c; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      color: #eef2ff;
+      overflow-x: hidden;
+    }
+    .premium-container { 
+      max-width: 100%;
+      margin: 0 auto; 
+      padding: 15px;
+    }
+    
+    /* Header */
+    .premium-header {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border-radius: 20px;
+      padding: 15px 25px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border: 1px solid #f59e0b;
+    }
+    .premium-header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .premium-badge { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; }
+    .admin-badge { background: linear-gradient(135deg, #667eea, #764ba2); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; margin-left: 10px; }
+    .back-btn { background: #1e293b; border: 1px solid #334155; padding: 8px 20px; border-radius: 25px; color: white; text-decoration: none; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .back-btn:hover { background: #7c3aed; }
+    
+    /* Customization Panel */
+    .customization-panel {
+      background: #0f172ad9;
+      border-radius: 15px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border: 1px solid #2d3a5e;
+    }
+    .panel-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .customization-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .custom-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .custom-group label {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .custom-group select, .custom-group input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .custom-group select:hover, .custom-group input:hover {
+      border-color: #8b5cf6;
+    }
+    .apply-btn {
+      background: #7c3aed;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    .apply-btn:hover {
+      background: #6d28d9;
+      transform: scale(1.02);
+    }
+    
+    /* Chart Size Controls */
+    .chart-size-controls {
+      background: #0f172ad9;
+      border-radius: 15px;
+      padding: 12px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      border: 1px solid #2d3a5e;
+    }
+    .size-control-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .size-label { font-size: 0.85rem; color: #94a3b8; }
+    .size-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .size-btn:hover, .size-btn.active { background: #7c3aed; border-color: #8b5cf6; }
+    .custom-size-input { display: flex; align-items: center; gap: 8px; }
+    .custom-size-input input { width: 70px; padding: 6px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: white; text-align: center; }
+    .fullscreen-btn { background: #f59e0b; border: none; padding: 6px 15px; border-radius: 8px; color: #0a0f1c; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .fullscreen-btn:hover { background: #d97706; }
+    
+    /* Access Info */
+    .access-info {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+    }
+    .admin-access { border-left: 3px solid #f59e0b; background: #2d1f2e; }
+    
+    /* Analyzed Pairs */
+    .analyzed-pairs { 
+      background: #0f172ad9; 
+      border-radius: 15px; 
+      padding: 15px; 
+      margin-bottom: 20px; 
+      border-left: 4px solid #f59e0b; 
+    }
+    .analyzed-title { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-weight: bold; color: #f59e0b; }
+    .pairs-grid { display: flex; flex-wrap: wrap; gap: 12px; max-height: 120px; overflow-y: auto; padding: 5px; }
+    .pair-card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-left: 3px solid #f59e0b;
+      min-width: 140px;
+    }
+    .pair-card:hover { transform: translateY(-2px); background: #2d3748; }
+    .pair-name { font-weight: bold; font-size: 0.9rem; }
+    .pair-analysis { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; }
+    
+    /* Chart Container - FIXED LARGE SIZE */
+    .chart-container { 
+      background: #0f172ad9; 
+      border-radius: 20px; 
+      padding: 15px; 
+      border: 1px solid #2d3a5e;
+      transition: all 0.3s ease;
+    }
+    .chart-wrapper { 
+      width: 100%; 
+      min-height: 800px;
+      height: 80vh;
+      border-radius: 12px; 
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-wrapper.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      border-radius: 0;
+      background: #0a0f1c;
+    }
+    .tradingview-widget-container {
+      width: 100%;
+      height: 100%;
+    }
+    .chart-controls { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 8px; 
+      margin-bottom: 15px; 
+      padding-bottom: 10px; 
+      border-bottom: 1px solid #2d3a5e;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .symbol-btn { 
+      background: #1e293b; 
+      border: 1px solid #334155; 
+      padding: 6px 14px; 
+      border-radius: 20px; 
+      color: white; 
+      cursor: pointer; 
+      font-size: 0.8rem; 
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+    .symbol-btn:hover, .symbol-btn.active { background: #7c3aed; }
+    .resize-handle {
+      width: 100%;
+      height: 8px;
+      background: #2d3748;
+      cursor: ns-resize;
+      margin-top: 10px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .resize-handle:hover { background: #7c3aed; }
+    .premium-footer { margin-top: 20px; text-align: center; font-size: 0.75rem; color: #6b7280; padding: 15px; }
+    
+    @media (max-width: 768px) {
+      .premium-container { padding: 10px; }
+      .chart-wrapper { height: 60vh; min-height: 500px; }
+      .chart-controls { max-height: 100px; }
+      .size-btn { padding: 4px 10px; font-size: 0.7rem; }
+      .symbol-btn { padding: 4px 10px; font-size: 0.7rem; }
+      .pair-card { min-width: 110px; }
+      .customization-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="premium-container">
+  <div class="premium-header">
+    <h1>
+      <i class="fas fa-crown" style="color: #f59e0b;"></i> 
+      Alpha Trader Premium 
+      <span class="premium-badge">PRO</span>
+      <span id="adminBadge" class="admin-badge" style="display:none;"><i class="fas fa-user-shield"></i> ADMIN ACCESS</span>
+    </h1>
+    <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
+  </div>
+
+  <!-- CUSTOMIZATION PANEL -->
+  <div class="customization-panel">
+    <div class="panel-title">
+      <i class="fas fa-sliders-h"></i> Chart Customization
+    </div>
+    <div class="customization-grid">
+      <div class="custom-group">
+        <label><i class="fas fa-chart-line"></i> Chart Style</label>
+        <select id="chartStyle">
+          <option value="1">Candles</option>
+          <option value="2">Bars</option>
+          <option value="3">Line</option>
+          <option value="4">Area</option>
+          <option value="5">Heikin Ashi</option>
+          <option value="6">Renko</option>
+          <option value="7">Kagi</option>
+          <option value="8">Line Break</option>
+        </select>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-clock"></i> Time Interval</label>
+        <select id="chartInterval">
+          <option value="1">1 minute</option>
+          <option value="5">5 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="60" selected>1 hour</option>
+          <option value="240">4 hours</option>
+          <option value="D">Daily</option>
+          <option value="W">Weekly</option>
+          <option value="M">Monthly</option>
+        </select>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-palette"></i> Theme</label>
+        <select id="chartTheme">
+          <option value="dark" selected>Dark</option>
+          <option value="light">Light</option>
+          <option value="monochrome">Monochrome</option>
+        </select>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-chart-bar"></i> Range</label>
+        <select id="chartRange">
+          <option value="1D">1 Day</option>
+          <option value="5D">5 Days</option>
+          <option value="1M">1 Month</option>
+          <option value="3M" selected>3 Months</option>
+          <option value="6M">6 Months</option>
+          <option value="1Y">1 Year</option>
+          <option value="5Y">5 Years</option>
+          <option value="ALL">All Data</option>
+        </select>
+      </div>
+    </div>
+    <div class="customization-grid">
+      <div class="custom-group">
+        <label><i class="fas fa-chart-line"></i> Add Indicators</label>
+        <select id="addIndicator">
+          <option value="">-- Select Indicator --</option>
+          <option value="MASimple@tv-basicstudies">Moving Average (MA)</option>
+          <option value="RSI@tv-basicstudies">RSI</option>
+          <option value="MACD@tv-basicstudies">MACD</option>
+          <option value="BB@tv-basicstudies">Bollinger Bands</option>
+          <option value="Volume@tv-basicstudies">Volume</option>
+          <option value="StochRSI@tv-basicstudies">Stoch RSI</option>
+          <option value="ATR@tv-basicstudies">ATR</option>
+          <option value="Ichimoku@tv-basicstudies">Ichimoku Cloud</option>
+        </select>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-eraser"></i> Current Indicators</label>
+        <select id="currentIndicators" multiple size="2" style="height: 55px;">
+          <option value="MASimple@tv-basicstudies" selected>MA (20)</option>
+          <option value="RSI@tv-basicstudies" selected>RSI (14)</option>
+          <option value="MACD@tv-basicstudies" selected>MACD (12,26,9)</option>
+        </select>
+        <button onclick="removeSelectedIndicator()" style="background:#dc3545; border:none; padding:4px 8px; border-radius:5px; margin-top:5px; font-size:0.7rem;">Remove Selected</button>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-chart-line"></i> Studies to Add</label>
+        <select id="addStudy">
+          <option value="">-- Select Study --</option>
+          <option value="MASimple@tv-basicstudies">Moving Average</option>
+          <option value="EMA@tv-basicstudies">Exponential MA</option>
+          <option value="RSI@tv-basicstudies">RSI</option>
+          <option value="MACD@tv-basicstudies">MACD</option>
+          <option value="BB@tv-basicstudies">Bollinger Bands</option>
+          <option value="Volume@tv-basicstudies">Volume</option>
+          <option value="StochRSI@tv-basicstudies">Stochastic RSI</option>
+          <option value="ATR@tv-basicstudies">Average True Range</option>
+          <option value="Ichimoku@tv-basicstudies">Ichimoku Cloud</option>
+          <option value="Supertrend@tv-basicstudies">Supertrend</option>
+          <option value="Fibonacci@tv-basicstudies">Fibonacci Retracement</option>
+        </select>
+        <button onclick="addStudy()" style="background:#28a745; border:none; padding:4px 8px; border-radius:5px; margin-top:5px; font-size:0.7rem;">Add Study</button>
+      </div>
+      <div class="custom-group">
+        <label><i class="fas fa-chart-simple"></i> MA Period</label>
+        <input type="number" id="maPeriod" value="20" min="5" max="200" step="5">
+        <button onclick="updateMA()" style="background:#7c3aed; border:none; padding:5px; border-radius:5px; margin-top:5px;">Update MA</button>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+      <button onclick="applyAllSettings()" class="apply-btn"><i class="fas fa-check"></i> Apply All Settings</button>
+      <button onclick="resetChart()" style="background:#6c757d; border:none; padding:8px 20px; border-radius:8px; color:white; cursor:pointer;"><i class="fas fa-undo"></i> Reset Chart</button>
+    </div>
+  </div>
+
+  <!-- Chart Size Controls -->
+  <div class="chart-size-controls">
+    <div class="size-control-group">
+      <span class="size-label"><i class="fas fa-arrows-alt"></i> Chart Size:</span>
+      <button class="size-btn" onclick="setChartSize('small')">Small (500px)</button>
+      <button class="size-btn" onclick="setChartSize('medium')">Medium (700px)</button>
+      <button class="size-btn active" onclick="setChartSize('large')">Large (900px)</button>
+      <button class="size-btn" onclick="setChartSize('xlarge')">Extra Large (1100px)</button>
+    </div>
+    <div class="size-control-group">
+      <div class="custom-size-input">
+        <span class="size-label">Custom:</span>
+        <input type="number" id="customHeight" placeholder="px" value="900" step="50" min="400" max="2000">
+        <button class="size-btn" onclick="setCustomHeight()">Apply</button>
+      </div>
+      <button class="fullscreen-btn" onclick="toggleFullscreen()">
+        <i class="fas fa-expand"></i> Fullscreen
+      </button>
+    </div>
+  </div>
+
+  <!-- Access Information -->
+  <div id="accessInfo" class="access-info"></div>
+
+  <!-- Admin's Analyzed Pairs -->
+  <div class="analyzed-pairs" id="analyzedSection">
+    <div class="analyzed-title"><i class="fas fa-chart-line"></i> Admin's Analyzed Pairs <span style="font-size:0.7rem;">(Click to view on chart)</span></div>
+    <div class="pairs-grid" id="analyzedPairsGrid"><div style="color:#94a3b8;">Loading...</div></div>
+  </div>
+
+  <!-- Chart Container - LARGE SIZE -->
+  <div class="chart-container">
+    <div class="chart-controls" id="quickSymbols">
+      <button class="symbol-btn" onclick="changeSymbol('FX:EURUSD')">EUR/USD</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:GBPUSD')">GBP/USD</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:USDJPY')">USD/JPY</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:AUDUSD')">AUD/USD</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:USDCAD')">USD/CAD</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:USDCHF')">USD/CHF</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:NZDUSD')">NZD/USD</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:XAUUSD')">Gold</button>
+      <button class="symbol-btn" onclick="changeSymbol('FX:XAGUSD')">Silver</button>
+      <button class="symbol-btn" onclick="changeSymbol('USOIL')">WTI Oil</button>
+      <button class="symbol-btn" onclick="changeSymbol('UKOIL')">Brent Oil</button>
+      <button class="symbol-btn" onclick="changeSymbol('BTCUSD')">Bitcoin</button>
+      <button class="symbol-btn" onclick="changeSymbol('ETHUSD')">Ethereum</button>
+      <button class="symbol-btn" onclick="changeSymbol('SOLUSD')">Solana</button>
+      <button class="symbol-btn" onclick="changeSymbol('SPX')">S&P 500</button>
+      <button class="symbol-btn" onclick="changeSymbol('NASDAQ')">NASDAQ</button>
+      <button class="symbol-btn" onclick="changeSymbol('DJI')">Dow Jones</button>
+      <button class="symbol-btn" onclick="changeSymbol('DAX')">DAX</button>
+      <button class="symbol-btn" onclick="changeSymbol('FTSE')">FTSE 100</button>
+      <button class="symbol-btn" onclick="changeSymbol('AAPL')">Apple</button>
+      <button class="symbol-btn" onclick="changeSymbol('TSLA')">Tesla</button>
+      <button class="symbol-btn" onclick="changeSymbol('NVDA')">NVIDIA</button>
+    </div>
+    <div id="chartWrapper" class="chart-wrapper">
+      <div id="tradingview_chart" class="tradingview-widget-container"></div>
+    </div>
+    <div class="resize-handle" id="resizeHandle"></div>
+    <div style="margin-top:12px; text-align:center; font-size:0.7rem; color:#6b7280;">
+      <i class="fas fa-arrows-alt"></i> Drag the handle to resize | <i class="fas fa-expand"></i> Fullscreen | <i class="fas fa-sliders-h"></i> Customize above
+    </div>
+  </div>
+  
+  <div class="premium-footer">
+    <p><i class="fas fa-crown"></i> Premium Access | Full TradingView Chart with All Instruments</p>
+    <p>© 2025 Alpha Trader - All Rights Reserved</p>
+  </div>
+</div>
+
+<script>
+  let tvWidget = null;
+  let siteData = null;
+  let currentUser = null;
+  let isAdmin = false;
+  let isPremiumUser = false;
+  let currentChartHeight = 900;
+  let isFullscreen = false;
+  let resizeTimeout = null;
+  let currentStudies = ['MASimple@tv-basicstudies', 'RSI@tv-basicstudies', 'MACD@tv-basicstudies'];
+  let currentSymbol = 'FX:EURUSD';
+  let currentInterval = '60';
+  
+  // Admin password
+  const ADMIN_PASSWORD = "AlphaTrader2025";
+  
+  function loadSiteData() {
+    const stored = localStorage.getItem('alpha_trader_data');
+    if (stored) {
+      siteData = JSON.parse(stored);
+    } else {
+      siteData = { 
+        analyzedPairs: [], 
+        premiumUsers: [], 
+        users: [],
+        premiumSettings: { price: "29.99", currency: "$", instructions: "Contact admin for payment" }
+      };
+    }
+  }
+  
+  function checkAdminAccess() {
+    const adminSession = localStorage.getItem('admin_session');
+    if (adminSession === 'true') return true;
+    return false;
+  }
+  
+  function checkPremiumAccess() {
+    const saved = localStorage.getItem('alpha_current_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        const found = siteData.users.find(u => u.id === user.id);
+        if (found) {
+          currentUser = found;
+          const premiumUser = siteData.premiumUsers?.find(pu => pu.userId === found.id);
+          if (premiumUser && premiumUser.status === 'active' && premiumUser.expiryDate > Date.now()) {
+            return true;
+          }
+        }
+      } catch(e) {}
+    }
+    return false;
+  }
+  
+  function requestAdminAccess() {
+    const password = prompt("🔐 Enter Admin Password to access premium chart:");
+    if (password === ADMIN_PASSWORD) {
+      localStorage.setItem('admin_session', 'true');
+      isAdmin = true;
+      updateAccessDisplay();
+      initTradingView(currentSymbol);
+      renderAnalyzedPairs();
+      return true;
+    } else if (password !== null) {
+      alert("❌ Incorrect password! Access denied.");
+    }
+    return false;
+  }
+  
+  function updateAccessDisplay() {
+    const accessInfo = document.getElementById('accessInfo');
+    const adminBadge = document.getElementById('adminBadge');
+    
+    if (isAdmin) {
+      accessInfo.innerHTML = `
+        <div class="access-info admin-access">
+          <i class="fas fa-crown" style="color: #f59e0b;"></i>
+          <span><strong>👑 ADMIN ACCESS GRANTED</strong> - You have full access to all premium features for free!</span>
+          <button onclick="logoutAdmin()" style="background:#dc3545; border:none; padding:4px 12px; border-radius:6px; color:white; margin-left:10px; cursor:pointer;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      `;
+      adminBadge.style.display = 'inline-block';
+    } else if (isPremiumUser) {
+      accessInfo.innerHTML = `
+        <div class="access-info" style="border-left: 3px solid #4ade80; background:#1e2a1f;">
+          <i class="fas fa-check-circle" style="color: #4ade80;"></i>
+          <span><strong>✅ PREMIUM ACCESS ACTIVE</strong> - Welcome back, ${escapeHtml(currentUser?.username || 'Trader')}!</span>
+        </div>
+      `;
+    } else if (currentUser) {
+      accessInfo.innerHTML = `
+        <div class="access-info">
+          <i class="fas fa-lock" style="color: #f87171;"></i>
+          <span><strong>⚠️ Standard Account</strong> - You need premium access to view charts.</span>
+          <button onclick="requestAdminAccess()" style="background:#7c3aed; border:none; padding:5px 12px; border-radius:8px; color:white; margin-left:10px; cursor:pointer;">
+            <i class="fas fa-key"></i> Admin Login
+          </button>
+        </div>
+      `;
+    } else {
+      accessInfo.innerHTML = `
+        <div class="access-info">
+          <i class="fas fa-lock" style="color: #f87171;"></i>
+          <span><strong>🔒 Premium Access Required</strong> - Please login or upgrade to access the chart.</span>
+          <a href="index.html" style="background:#7c3aed; color:white; padding:5px 12px; border-radius:8px; text-decoration:none; margin-left:10px;">Login / Sign Up</a>
+          <button onclick="requestAdminAccess()" style="background:#f59e0b; border:none; padding:5px 12px; border-radius:8px; color:white; margin-left:10px; cursor:pointer;">
+            <i class="fas fa-key"></i> Admin Login
+          </button>
+        </div>
+      `;
+    }
+  }
+  
+  function logoutAdmin() {
+    localStorage.removeItem('admin_session');
+    isAdmin = false;
+    updateAccessDisplay();
+    location.reload();
+  }
+  
+  function initTradingView(symbol = 'FX:EURUSD') {
+    currentSymbol = symbol;
+    const container = document.getElementById('tradingview_chart');
+    const style = document.getElementById('chartStyle').value;
+    const interval = document.getElementById('chartInterval').value;
+    const theme = document.getElementById('chartTheme').value;
+    const range = document.getElementById('chartRange').value;
+    
+    currentInterval = interval;
+    
+    if (tvWidget) {
+      try { tvWidget.remove(); } catch(e) {}
+    }
+    if (container) {
+      container.innerHTML = '';
+      new TradingView.widget({
+        container_id: 'tradingview_chart',
+        autosize: true,
+        symbol: symbol,
+        interval: interval,
+        timezone: 'Etc/UTC',
+        theme: theme,
+        style: style,
+        locale: 'en',
+        toolbar_bg: '#0a0f1c',
+        enable_publishing: false,
+        allow_symbol_change: true,
+        save_image: true,
+        range: range,
+        studies: currentStudies,
+        show_popup_button: true,
+        hide_volume: false,
+        disabled_features: ['use_localstorage_for_settings'],
+        enabled_features: ['show_legend']
+      });
+    }
+  }
+  
+  function applyAllSettings() {
+    if (tvWidget) {
+      initTradingView(currentSymbol);
+    }
+  }
+  
+  function addStudy() {
+    const study = document.getElementById('addStudy').value;
+    if (study && !currentStudies.includes(study)) {
+      currentStudies.push(study);
+      updateCurrentIndicatorsList();
+      initTradingView(currentSymbol);
+    }
+  }
+  
+  function removeSelectedIndicator() {
+    const select = document.getElementById('currentIndicators');
+    const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+    currentStudies = currentStudies.filter(s => !selected.includes(s));
+    updateCurrentIndicatorsList();
+    initTradingView(currentSymbol);
+  }
+  
+  function updateCurrentIndicatorsList() {
+    const select = document.getElementById('currentIndicators');
+    const indicatorNames = {
+      'MASimple@tv-basicstudies': 'MA (20)',
+      'EMA@tv-basicstudies': 'EMA (20)',
+      'RSI@tv-basicstudies': 'RSI (14)',
+      'MACD@tv-basicstudies': 'MACD (12,26,9)',
+      'BB@tv-basicstudies': 'Bollinger Bands',
+      'Volume@tv-basicstudies': 'Volume',
+      'StochRSI@tv-basicstudies': 'Stochastic RSI',
+      'ATR@tv-basicstudies': 'ATR (14)',
+      'Ichimoku@tv-basicstudies': 'Ichimoku Cloud',
+      'Supertrend@tv-basicstudies': 'Supertrend',
+      'Fibonacci@tv-basicstudies': 'Fibonacci'
+    };
+    select.innerHTML = currentStudies.map(s => `<option value="${s}">${indicatorNames[s] || s}</option>`).join('');
+  }
+  
+  function updateMA() {
+    const period = document.getElementById('maPeriod').value;
+    const newStudy = `MASimple@tv-basicstudies`;
+    if (!currentStudies.includes(newStudy)) {
+      currentStudies.push(newStudy);
+    }
+    updateCurrentIndicatorsList();
+    initTradingView(currentSymbol);
+  }
+  
+  function resetChart() {
+    currentStudies = ['MASimple@tv-basicstudies', 'RSI@tv-basicstudies', 'MACD@tv-basicstudies'];
+    document.getElementById('chartStyle').value = '1';
+    document.getElementById('chartInterval').value = '60';
+    document.getElementById('chartTheme').value = 'dark';
+    document.getElementById('chartRange').value = '3M';
+    document.getElementById('maPeriod').value = '20';
+    updateCurrentIndicatorsList();
+    initTradingView(currentSymbol);
+  }
+  
+  // Chart Size Functions
+  function setChartSize(size) {
+    const chartWrapper = document.getElementById('chartWrapper');
+    const sizes = { small: 500, medium: 700, large: 900, xlarge: 1100 };
+    currentChartHeight = sizes[size] || 900;
+    chartWrapper.style.height = currentChartHeight + 'px';
+    chartWrapper.style.minHeight = currentChartHeight + 'px';
+    
+    document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+    if (size === 'small') document.querySelectorAll('.size-btn')[0].classList.add('active');
+    if (size === 'medium') document.querySelectorAll('.size-btn')[1].classList.add('active');
+    if (size === 'large') document.querySelectorAll('.size-btn')[2].classList.add('active');
+    if (size === 'xlarge') document.querySelectorAll('.size-btn')[3].classList.add('active');
+    
+    document.getElementById('customHeight').value = currentChartHeight;
+    setTimeout(() => { if (tvWidget) tvWidget.resize(); }, 100);
+  }
+  
+  function setCustomHeight() {
+    const customHeight = parseInt(document.getElementById('customHeight').value);
+    if (customHeight >= 400 && customHeight <= 2000) {
+      currentChartHeight = customHeight;
+      const chartWrapper = document.getElementById('chartWrapper');
+      chartWrapper.style.height = currentChartHeight + 'px';
+      chartWrapper.style.minHeight = currentChartHeight + 'px';
+      document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+      setTimeout(() => { if (tvWidget) tvWidget.resize(); }, 100);
+    } else {
+      alert("Please enter a height between 400px and 2000px");
+    }
+  }
+  
+  function toggleFullscreen() {
+    const chartWrapper = document.getElementById('chartWrapper');
+    if (!isFullscreen) {
+      chartWrapper.classList.add('fullscreen');
+      isFullscreen = true;
+      document.querySelector('.fullscreen-btn').innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
+      document.body.style.overflow = 'hidden';
+    } else {
+      chartWrapper.classList.remove('fullscreen');
+      isFullscreen = false;
+      document.querySelector('.fullscreen-btn').innerHTML = '<i class="fas fa-expand"></i> Fullscreen';
+      document.body.style.overflow = 'auto';
+      chartWrapper.style.height = currentChartHeight + 'px';
+      chartWrapper.style.minHeight = currentChartHeight + 'px';
+    }
+    setTimeout(() => { if (tvWidget) tvWidget.resize(); }, 100);
+  }
+  
+  function initResizeHandle() {
+    const handle = document.getElementById('resizeHandle');
+    const chartWrapper = document.getElementById('chartWrapper');
+    let startY, startHeight;
+    
+    handle.addEventListener('mousedown', function(e) {
+      startY = e.clientY;
+      startHeight = parseInt(document.defaultView.getComputedStyle(chartWrapper).height, 10);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      handle.style.background = '#7c3aed';
+      e.preventDefault();
+    });
+    
+    function onMouseMove(e) {
+      const newHeight = startHeight + (e.clientY - startY);
+      if (newHeight >= 400 && newHeight <= 2000) {
+        chartWrapper.style.height = newHeight + 'px';
+        chartWrapper.style.minHeight = newHeight + 'px';
+        currentChartHeight = newHeight;
+        document.getElementById('customHeight').value = newHeight;
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => { if (tvWidget) tvWidget.resize(); }, 50);
+      }
+    }
+    
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      handle.style.background = '#2d3748';
+      if (tvWidget) tvWidget.resize();
+    }
+  }
+  
+  function changeSymbol(symbol) {
+    currentSymbol = symbol;
+    initTradingView(symbol);
+  }
+  
+  function changeSymbolFromPair(pair) {
+    const map = {
+      'EUR/USD': 'FX:EURUSD', 'GBP/USD': 'FX:GBPUSD', 'USD/JPY': 'FX:USDJPY',
+      'AUD/USD': 'FX:AUDUSD', 'USD/CAD': 'FX:USDCAD', 'USD/CHF': 'FX:USDCHF',
+      'NZD/USD': 'FX:NZDUSD', 'Gold': 'FX:XAUUSD', 'Silver': 'FX:XAGUSD',
+      'WTI Oil': 'USOIL', 'Brent Oil': 'UKOIL', 'Bitcoin': 'BTCUSD',
+      'Ethereum': 'ETHUSD', 'Solana': 'SOLUSD', 'S&P 500': 'SPX',
+      'NASDAQ': 'NASDAQ', 'Dow Jones': 'DJI', 'DAX': 'DAX',
+      'FTSE 100': 'FTSE', 'Apple': 'AAPL', 'Tesla': 'TSLA', 'NVIDIA': 'NVDA'
+    };
+    changeSymbol(map[pair] || `FX:${pair.replace('/', '')}`);
+  }
+  
+  function renderAnalyzedPairs() {
+    const container = document.getElementById('analyzedPairsGrid');
+    const pairs = siteData.analyzedPairs || [];
+    if (pairs.length === 0) {
+      container.innerHTML = '<div style="color:#94a3b8;">No analyzed pairs yet. Admin will add soon!</div>';
+      return;
+    }
+    container.innerHTML = pairs.map(p => `
+      <div class="pair-card" onclick="changeSymbolFromPair('${escapeHtml(p.pair)}')">
+        <div class="pair-name">${escapeHtml(p.pair)}</div>
+        <div class="pair-analysis">${escapeHtml(p.analysis)}</div>
+      </div>
+    `).join('');
+  }
+  
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+  
+  function showLockedMessage() {
+    const container = document.getElementById('chartWrapper');
+    if (container) {
+      container.innerHTML = `
+        <div style="display:flex; justify-content:center; align-items:center; height:100%; background:#0f172a; border-radius:12px;">
+          <div style="text-align:center; padding:30px;">
+            <i class="fas fa-lock" style="font-size:4rem; color:#f59e0b; margin-bottom:20px;"></i>
+            <h3 style="margin-bottom:10px;">Premium Feature</h3>
+            <p style="margin-bottom:20px;">Upgrade to premium or login as admin to unlock the full TradingView chart with all pairs.</p>
+            <button onclick="requestAdminAccess()" style="background:#f59e0b; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold; color:#0a0f1c;">
+              <i class="fas fa-key"></i> Admin Login
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Initialize
+  loadSiteData();
+  isAdmin = checkAdminAccess();
+  isPremiumUser = checkPremiumAccess();
+  updateCurrentIndicatorsList();
+  initResizeHandle();
+  
+  if (isAdmin || isPremiumUser) {
+    updateAccessDisplay();
+    setTimeout(() => initTradingView('FX:EURUSD'), 500);
+    renderAnalyzedPairs();
+    setChartSize('large'); // Set to Large (900px) by default
+  } else {
+    updateAccessDisplay();
+    renderAnalyzedPairs();
+    showLockedMessage();
+  }
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isFullscreen) {
+      toggleFullscreen();
+    }
+  });
+</script>
+</body>
+</html>
